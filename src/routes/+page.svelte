@@ -25,52 +25,10 @@
 
     }
     update({target: {value: log}})
+    // TODO: Add "==" in action table
 </script>
 
-<h1>ExtLatency Log</h1>
+<h1 class="text-center my-4">ExtLatency Log Viewer for IBM DataPower Gateway</h1>
 
-<label for="logInput">Log: </label>
-<input type="text" name="logInput" id="logInput" bind:value={log} on:change={update}>
-
-<div>
-    <ActionTable {actions}/>
-</div>
-
-<!-- <div>
-    <div class="row">
-        <div class="col">Request Processing</div>
-        <div class="col">
-            {#each requestProcessing as requestKeyword}
-                <div>
-                    {requestKeyword}
-                </div>
-            {/each}
-        </div>
-    </div>
-    <div class="row">
-        <div class="col">Response Processing</div>
-        <div class="col">
-            {#each responseProcessing as responseKeyword}
-                <div>
-                    {responseKeyword}
-                </div>
-            {/each}
-        </div>
-    </div>
-</div> -->
-
-
-<style>
-    .row{
-        display: flex;
-        flex-direction: row;
-    }
-    .row > div{
-        margin-inline: 1em;
-    }
-    #logInput{
-        display: block;
-        width: 50%;
-        padding: 0.5rem;
-    }
-</style>
+<textarea class="w-75 h-25 d-block px-5 py-3 mx-auto my-5" rows="3" name="logInput" id="logInput" bind:value={log} on:change={update} />
+<ActionTable {actions}/>

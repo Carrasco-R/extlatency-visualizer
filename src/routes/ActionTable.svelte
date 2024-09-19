@@ -26,27 +26,32 @@
         
 </script>
 
-<table>
-    <tr>
-        <th>
-            Time
-        </th>
-        <th>
-            Duration
-        </th>
-        <th>
-            Keyword
-        </th>
-        <th>
-            Description
-        </th>
-    </tr>
-    {#each formattedData as {time, duration, keyword, description}}
-         <tr>
-            <td>{time}</td>
+<table class="mx-auto table w-75">
+    <thead>
+        <tr>
+            <th>
+                Duration
+            </th>
+            <th>
+                Time
+            </th>
+            <th>
+                Keyword
+            </th>
+            <th>
+                Description
+            </th>
+        </tr>
+    </thead>
+    <tbody>
+
+        {#each formattedData as {time, duration, keyword, description}}
+        <tr>
             <td>{duration}</td>
+            <td>{time}</td>
             <td>{keyword}</td>
             <td>{description}</td>
-         </tr>
-    {/each}
+        </tr>
+        {/each}
+    </tbody>
 </table>
