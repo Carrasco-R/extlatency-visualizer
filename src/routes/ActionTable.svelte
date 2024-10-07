@@ -1,57 +1,38 @@
 <script>
-    export let actions
-    import {dictionary} from "$lib/dictionary"
-    
-    let formattedData = [{}]
-    $: if(actions){
-        let totalTime = 0
-        formattedData = []
-        actions.forEach(action => {
-            let [keyword, duration] = action.split("=")
-            duration = parseInt(duration)
-            totalTime += duration
-            formattedData = [ 
-                ...formattedData, 
-                {
-                    time: totalTime,
-                    keyword,
-                    duration, 
-                    description: dictionary[keyword] ?? "Unknown keyword"
-                }
-            ]
-        });
-        console.log({formattedData});
-        
-    }
-        
+  export let actions;
+  import { dictionary } from "$lib/dictionary";
+  import { DataTable } from "carbon-components-svelte";
+
+  let formattedData = [{}];
+  $: if (actions) {
+    let prevTime = 0;
+    formattedData = [];
+    actions.forEach((action, i) => {
+      let [keyword, time] = Object.entries(action)[0];
+      let duration = time - prevTime;
+      formattedData = [
+        ...formattedData,
+        {
+          id: i,
+          time,
+          keyword,
+          duration,
+          description: dictionary[keyword] ?? "Unknown keyword",
+        },
+      ];
+      prevTime = time;
+    });
+    // console.log({ formattedData });
+  }
 </script>
 
-<table class="mx-auto table w-75">
-    <thead>
-        <tr>
-            <th>
-                Duration
-            </th>
-            <th>
-                Time
-            </th>
-            <th>
-                Keyword
-            </th>
-            <th>
-                Description
-            </th>
-        </tr>
-    </thead>
-    <tbody>
-
-        {#each formattedData as {time, duration, keyword, description}}
-        <tr>
-            <td>{duration}</td>
-            <td>{time}</td>
-            <td>{keyword}</td>
-            <td>{description}</td>
-        </tr>
-        {/each}
-    </tbody>
-</table>
+<DataTable
+  size="short"
+  headers={[
+    { key: "time", value: "Elapsed Time (ms)" },
+    { key: "duration", value: "Duration (ms)" },
+    { key: "keyword", value: "Keyword" },
+    { key: "description", value: "Description" },
+  ]}
+  rows={formattedData}
+/>
