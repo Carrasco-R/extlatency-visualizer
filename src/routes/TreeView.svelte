@@ -1,6 +1,7 @@
 <script>
   export let formattedData;
   import { TreeView } from "carbon-components-svelte";
+  import { v4 as uuidv4 } from "uuid";
 
   console.log({ formattedData });
 
@@ -9,41 +10,70 @@
   let children = [];
 
   $: if (formattedData) {
+    let nodes = formattedData.map(({ id, keyword, text }) => {
+      return { id, keyword, text };
+    });
     children = [];
-    try {
-      let tsArray = [];
-      formattedData.forEach(({ keyword }, i) => {
-        console.log({ keyword });
+    console.log({ nodes });
+
+    function addTNodes(nodes) {
+      console.log({ nodes });
+
+      const startTracker = [];
+      let tree = [];
+      for (let i = 0; i < nodes.length; i++) {
+        const { id, keyword, text } = nodes[i];
         if (keyword == "TS") {
-          tsArray.push(i);
-          console.log({ tsArray });
+          startTracker.push(i);
+          console.log({ startTracker });
         }
         if (keyword == "TC") {
-          console.log("foo?");
+          if (startTracker.length == 1) {
+            const firstStart = startTracker.pop();
+            if (firstStart === undefined) {
+              throw new Error("Error parsing Tnodes");
+            }
+            let slice = nodes.slice(firstStart + 1, i);
+            const sliceKeys = slice.map(({ keyword }) => keyword);
+            console.log({ sliceKeys });
+            if (sliceKeys.includes("TS") || sliceKeys.includes("TC")) {
+              slice = addTNodes(slice);
+            }
 
-          const lastTSIndex = tsArray.pop();
-          console.log({ lastTSIndex });
-          if (lastTSIndex === undefined) {
-            throw new Error("Error parsing tree view");
+            tree = [
+              ...tree,
+              {
+                id: `Transaction${uuidv4()}`,
+                text: `Transaction`,
+                children: slice,
+              },
+            ];
+          } else {
+            startTracker.pop();
           }
-
-          children = [
-            ...children,
+        }
+        if (keyword != "TC" && startTracker.length == 0) {
+          tree = [
+            ...tree,
             {
-              id: `Transaction${lastTSIndex}`,
-              text: "Total Transaction",
-              children: formattedData.slice(lastTSIndex + 1, i),
+              id,
+              keyword,
+              text,
             },
           ];
-          console.log({ tsArray });
         }
-      });
-	  
+      }
+      return tree;
+    }
+    
+
+    try {
+      children = addTNodes(nodes);
+      console.log({ children });
     } catch (error) {
       console.log(error);
       children = [];
     }
-
   }
 </script>
 
@@ -52,10 +82,11 @@
   {children}
   bind:activeId
   bind:selectedIds
-  on:select={({ detail }) => console.log("select", detail)}
-  on:toggle={({ detail }) => console.log("toggle", detail)}
-  on:focus={({ detail }) => console.log("focus", detail)}
 />
+
+<!-- on:select={({ detail }) => console.log("select", detail)}
+  on:toggle={({ detail }) => console.log("toggle", detail)}
+  on:focus={({ detail }) => console.log("focus", detail)} -->
 
 <!-- <div>Active node id: {activeId}</div>
 <div>Selected ids: {JSON.stringify(selectedIds)}</div> -->

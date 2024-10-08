@@ -11,7 +11,7 @@
   let selectedIndex = 1;
 
   let log =
-    "ExtLatency: TS=0,HR=0,BR=0,PS=0,RT=2,COR=2,CI=3,RL=59,SE=59,XS=60,SV=62,SV=63,JTG=68,JTV=75, == GS=77,IV=80,PAR=82,XSL=85,X2J=86,SW=86,XC=86,RES=87,PC=87,TC=87, [https://172.168.0.1:9090/apic/foo/bar]";
+    "ExtLatency: TS=0,HR=0,BR=0,PS=0,RT=2,COR=2,CI=3,RL=59,SE=59,XS=60,SV=62,SV=63,JTG=68,JTV=75, == GS=77,IV=80,PAR=82,XSL=85,X2J=86,SW=86,XC=86,RES=87,PC=87,TC=87,TS=0,TS=0,TC=0,TC=0 [https://172.168.0.1:9090/apic/foo/bar]";
   let logType = "dp";
   let url = "";
   const logTypeMap = {
