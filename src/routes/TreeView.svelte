@@ -1,16 +1,54 @@
 <script>
-  export let actions;
+  export let formattedData;
   import { TreeView } from "carbon-components-svelte";
+
+  console.log({ formattedData });
 
   let activeId = "";
   let selectedIds = [];
-  let children = [
-    
-  ];
+  let children = [];
+
+  $: if (formattedData) {
+    children = [];
+    try {
+      let tsArray = [];
+      formattedData.forEach(({ keyword }, i) => {
+        console.log({ keyword });
+        if (keyword == "TS") {
+          tsArray.push(i);
+          console.log({ tsArray });
+        }
+        if (keyword == "TC") {
+          console.log("foo?");
+
+          const lastTSIndex = tsArray.pop();
+          console.log({ lastTSIndex });
+          if (lastTSIndex === undefined) {
+            throw new Error("Error parsing tree view");
+          }
+
+          children = [
+            ...children,
+            {
+              id: `Transaction${lastTSIndex}`,
+              text: "Total Transaction",
+              children: formattedData.slice(lastTSIndex + 1, i),
+            },
+          ];
+          console.log({ tsArray });
+        }
+      });
+	  
+    } catch (error) {
+      console.log(error);
+      children = [];
+    }
+
+  }
 </script>
 
 <TreeView
-  labelText="Cloud Products"
+  labelText="ExtLatency Tree View"
   {children}
   bind:activeId
   bind:selectedIds
