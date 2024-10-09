@@ -23,6 +23,7 @@
 	"type": "module",
 	"dependencies": {
 		"carbon-icons-svelte": "^12.11.1",
+		"carbon-pictograms-svelte": "^12.11.0",
 		"uuid": "^10.0.0"
 	}
 }

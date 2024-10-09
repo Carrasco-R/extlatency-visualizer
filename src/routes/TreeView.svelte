@@ -3,29 +3,35 @@
   import { TreeView } from "carbon-components-svelte";
   import { v4 as uuidv4 } from "uuid";
 
-  console.log({ formattedData });
+  //   console.log({ formattedData });
 
   let activeId = "";
   let selectedIds = [];
   let children = [];
 
   $: if (formattedData) {
-    let nodes = formattedData.map(({ id, keyword, text }) => {
-      return { id, keyword, text };
+    let nodes = formattedData.map(({ id, keyword, text, time, duration }) => {
+      return {
+        id,
+        keyword,
+        text: `${text} (${duration}ms)`,
+        time,
+        duration,
+      };
     });
     children = [];
-    console.log({ nodes });
+    // console.log({ nodes });
 
     function addTNodes(nodes) {
-      console.log({ nodes });
+      //   console.log({ nodes });
 
       const startTracker = [];
       let tree = [];
       for (let i = 0; i < nodes.length; i++) {
-        const { id, keyword, text } = nodes[i];
+        const { id, keyword, text, time, duration } = nodes[i];
         if (keyword == "TS") {
           startTracker.push(i);
-          console.log({ startTracker });
+          //   console.log({ startTracker });
         }
         if (keyword == "TC") {
           if (startTracker.length == 1) {
@@ -35,11 +41,12 @@
             }
             let slice = nodes.slice(firstStart + 1, i);
             const sliceKeys = slice.map(({ keyword }) => keyword);
-            console.log({ sliceKeys });
+            // console.log({ sliceKeys });
             if (sliceKeys.includes("TS") || sliceKeys.includes("TC")) {
               slice = addTNodes(slice);
+            } else {
+              slice = addPNodes(slice);
             }
-
             tree = [
               ...tree,
               {
@@ -53,6 +60,10 @@
           }
         }
         if (keyword != "TC" && startTracker.length == 0) {
+          //   console.log("add tc leaf");
+
+          //   console.log(`${text} (${time}ms)`);
+
           tree = [
             ...tree,
             {
@@ -65,11 +76,62 @@
       }
       return tree;
     }
-    
+    function addPNodes(nodes) {
+      //   console.log({ nodes });
+
+      const startTracker = [];
+      let tree = [];
+      for (let i = 0; i < nodes.length; i++) {
+        const { id, keyword, text, time, duration } = nodes[i];
+        if (keyword == "PS") {
+          startTracker.push(i);
+          //   console.log({ startTracker });
+        }
+        if (keyword == "PC") {
+          if (startTracker.length == 1) {
+            const firstStart = startTracker.pop();
+            if (firstStart === undefined) {
+              throw new Error("Error parsing pNodes");
+            }
+            let slice = nodes.slice(firstStart + 1, i);
+            const sliceKeys = slice.map(({ keyword }) => keyword);
+            // console.log({ sliceKeys });
+            if (sliceKeys.includes("PS") || sliceKeys.includes("PC")) {
+              slice = addPNodes(slice);
+            }
+
+            tree = [
+              ...tree,
+              {
+                id: `Processing Rule${uuidv4()}`,
+                text: `Processing Rule`,
+                children: slice,
+              },
+            ];
+          } else {
+            startTracker.pop();
+          }
+        }
+        if (keyword != "PC" && startTracker.length == 0) {
+          //   console.log("add duration?");
+          //   console.log(`${text} (${duration}ms)`);
+
+          tree = [
+            ...tree,
+            {
+              id,
+              text,
+              keyword,
+            },
+          ];
+        }
+      }
+      return tree;
+    }
 
     try {
       children = addTNodes(nodes);
-      console.log({ children });
+      //   console.log({ children });
     } catch (error) {
       console.log(error);
       children = [];
@@ -83,16 +145,3 @@
   bind:activeId
   bind:selectedIds
 />
-
-<!-- on:select={({ detail }) => console.log("select", detail)}
-  on:toggle={({ detail }) => console.log("toggle", detail)}
-  on:focus={({ detail }) => console.log("focus", detail)} -->
-
-<!-- <div>Active node id: {activeId}</div>
-<div>Selected ids: {JSON.stringify(selectedIds)}</div> -->
-
-<style>
-  div {
-    margin-top: var(--cds-spacing-05);
-  }
-</style>

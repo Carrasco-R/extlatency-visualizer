@@ -1,17 +1,26 @@
 <script>
-  import TreeView from "./TreeView.svelte";
+  // utils
+  import { page } from "$app/stores";
   import { dictionary } from "$lib/dictionary";
+  // custom components
+  import TreeView from "./TreeView.svelte";
   import ActionTable from "./ActionTable.svelte";
-  import { TextArea } from "carbon-components-svelte";
-  import { InlineNotification } from "carbon-components-svelte";
-  import { ContentSwitcher, Switch } from "carbon-components-svelte";
+  // carbon design components
+  import {
+    TextArea,
+    InlineNotification,
+    ContentSwitcher,
+    Switch,
+  } from "carbon-components-svelte";
   import DecisionTree from "carbon-icons-svelte/lib/DecisionTree.svelte";
   import Table from "carbon-icons-svelte/lib/Table.svelte";
 
-  let selectedIndex = 1;
+  let selectedIndex = 0;
 
+  //   let log = "";
   let log =
-    "ExtLatency: TS=0,HR=0,BR=0,PS=0,RT=2,COR=2,CI=3,RL=59,SE=59,XS=60,SV=62,SV=63,JTG=68,JTV=75, == GS=77,IV=80,PAR=82,XSL=85,X2J=86,SW=86,XC=86,RES=87,PC=87,TC=87,TS=0,TS=0,TC=0,TC=0 [https://172.168.0.1:9090/apic/foo/bar]";
+    "ExtLatency: TS=0,HR=0,BR=0,PS=0,RT=2,COR=2,CI=3,RL=59,SE=59,XS=60,SV=62,SV=63,JTG=68,JTV=75, == GS=77,IV=80,PAR=82,XSL=85,X2J=86,SW=86,XC=86,RES=87,PC=87,TC=0 [https://example.com/apic/foo/bar]";
+
   let logType = "dp";
   let url = "";
   const logTypeMap = {
@@ -95,49 +104,57 @@
       ];
       prevTime = time;
     });
-    // console.log({ formattedData });
   }
 </script>
 
-<TextArea
-  labelText="ExtLatency Message"
-  placeholder="ExtLatency: ......... [https://example.com]"
-  bind:value={log}
-/>
+<h1>ExtLatency Log Viewer</h1>
 
-{#if actions.length > 0}
-  <InlineNotification
-    lowContrast
-    hideCloseButton
-    kind="info"
-    title="Enhanced Latency Message type:"
-    subtitle={logTypeMap[logType]}
+<main>
+  <TextArea
+    labelText="ExtLatency Message"
+    placeholder="ExtLatency: ......... [https://example.com]"
+    bind:value={log}
   />
-  <InlineNotification
-    lowContrast
-    hideCloseButton
-    kind="info"
-    title="Resource URL:"
-    subtitle={url}
-  />
-  <ContentSwitcher bind:selectedIndex>
-    <Switch>
-      <div style="display: flex; align-items: center;">
-        <Table style="margin-right: 0.5rem;" /> Table (Default)
-      </div>
-    </Switch>
-    <Switch>
-      <div style="display: flex; align-items: center;">
-        <DecisionTree style="margin-right: 0.5rem;" /> Tree View
-      </div>
-    </Switch>
-  </ContentSwitcher>
-  <div style="margin-top: 2em"></div>
-  {#if selectedIndex === 0}
-    <ActionTable {formattedData} />
-  {:else if selectedIndex == 1}
-    <TreeView {formattedData} />
+
+  {#if actions.length > 0}
+    <InlineNotification
+      lowContrast
+      hideCloseButton
+      kind="info"
+      title="Enhanced Latency Message type:"
+      subtitle={logTypeMap[logType]}
+    />
+    <InlineNotification
+      lowContrast
+      hideCloseButton
+      kind="info"
+      title="Resource URL:"
+      subtitle={url}
+    />
+    <ContentSwitcher bind:selectedIndex>
+      <Switch>
+        <div style="display: flex; align-items: center;">
+          <Table style="margin-right: 0.5rem;" /> Table (Default)
+        </div>
+      </Switch>
+      <Switch>
+        <div style="display: flex; align-items: center;">
+          <DecisionTree style="margin-right: 0.5rem;" /> Tree View
+        </div>
+      </Switch>
+    </ContentSwitcher>
+    <div style="margin-top: 2em"></div>
+    {#if selectedIndex === 0}
+      <ActionTable {formattedData} />
+    {:else if selectedIndex == 1}
+      <TreeView {formattedData} />
+    {/if}
+  {:else if log !== ""}
+    <InlineNotification
+      lowContrast
+      hideCloseButton
+      title="Error:"
+      subtitle="Failed to parse log"
+    />
   {/if}
-{:else}
-  Error
-{/if}
+</main>
