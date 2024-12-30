@@ -1,10 +1,9 @@
 <script>
   // utils
-  import { page } from "$app/stores";
   import { dictionary } from "$lib/dictionary";
   // custom components
-  import TreeView from "./TreeView.svelte";
-  import ActionTable from "./ActionTable.svelte";
+  import CollapsibleView from "./CollapsibleView.svelte";
+  import TableView from "./TableView.svelte";
   // carbon design components
   import {
     TextArea,
@@ -14,6 +13,8 @@
   } from "carbon-components-svelte";
   import DecisionTree from "carbon-icons-svelte/lib/DecisionTree.svelte";
   import Table from "carbon-icons-svelte/lib/Table.svelte";
+  import Fire from "carbon-icons-svelte/lib/Fire.svelte";
+  import CollapsibleTreeView from "./CollapsibleView.svelte";
 
   let selectedIndex = 0;
 
@@ -86,7 +87,7 @@
 
   let formattedData = [{}];
   $: if (log) {
-    update(log);
+    update(log.trim());
     let prevTime = 0;
     formattedData = [];
     actions.forEach((action, i) => {
@@ -131,23 +132,34 @@
       title="Resource URL:"
       subtitle={url}
     />
+
     <ContentSwitcher bind:selectedIndex>
       <Switch>
         <div style="display: flex; align-items: center;">
-          <Table style="margin-right: 0.5rem;" /> Table (Default)
+          <Table style="margin-right: 0.5rem;" />
+          <span>Table (Default)</span>
         </div>
       </Switch>
       <Switch>
         <div style="display: flex; align-items: center;">
-          <DecisionTree style="margin-right: 0.5rem;" /> Tree View
+          <DecisionTree style="margin-right: 0.5rem;" />
+          <span>Collapsible Tree View</span>
+        </div>
+      </Switch>
+      <Switch>
+        <div style="display: flex; align-items: center;">
+          <Fire style="margin-right: 0.5rem;" />
+          <span>Flame Chart</span>
         </div>
       </Switch>
     </ContentSwitcher>
     <div style="margin-top: 2em"></div>
     {#if selectedIndex === 0}
-      <ActionTable {formattedData} />
+      <TableView {formattedData} />
     {:else if selectedIndex == 1}
-      <TreeView {formattedData} />
+      <CollapsibleView {formattedData} />
+    {:else if selectedIndex == 2}
+      <FlameChartView {formattedData} />
     {/if}
   {:else if log !== ""}
     <InlineNotification
