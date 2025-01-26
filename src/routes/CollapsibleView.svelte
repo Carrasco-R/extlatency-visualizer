@@ -8,6 +8,7 @@
   let activeId = "";
   let selectedIds = [];
   let children = [];
+  let initialExpandedID = null
 
   $: if (formattedData) {
     let nodes = formattedData.map(({ id, keyword, text, time, duration }) => {
@@ -47,14 +48,16 @@
             } else {
               slice = addPNodes(slice);
             }
+            const transactionID = `Transaction${uuidv4()}`
             tree = [
               ...tree,
               {
-                id: `Transaction${uuidv4()}`,
+                id: transactionID,
                 text: `Transaction`,
                 children: slice,
               },
             ];
+            initialExpandedID = transactionID
           } else {
             startTracker.pop();
           }
@@ -131,7 +134,7 @@
 
     try {
       children = addTNodes(nodes);
-      //   console.log({ children });
+        console.log({ children });
     } catch (error) {
       console.log(error);
       children = [];
@@ -141,6 +144,7 @@
 
 <TreeView
   labelText="ExtLatency Tree View"
+  expandedIds={[initialExpandedID]}
   {children}
   bind:activeId
   bind:selectedIds

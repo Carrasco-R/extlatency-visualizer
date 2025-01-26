@@ -4,6 +4,7 @@
   // custom components
   import CollapsibleView from "./CollapsibleView.svelte";
   import TableView from "./TableView.svelte";
+  import { Button, CopyButton } from "carbon-components-svelte";
   // carbon design components
   import {
     TextArea,
@@ -15,13 +16,16 @@
   import Table from "carbon-icons-svelte/lib/Table.svelte";
   import Fire from "carbon-icons-svelte/lib/Fire.svelte";
   import CollapsibleTreeView from "./CollapsibleView.svelte";
-
+  import { Copy } from "carbon-icons-svelte";
+  import { text } from "@sveltejs/kit";
+  import { page } from "$app/stores";
   let selectedIndex = 0;
 
   //   let log = "";
   let log =
     "ExtLatency: TS=0,HR=0,BR=0,PS=0,RT=2,COR=2,CI=3,RL=59,SE=59,XS=60,SV=62,SV=63,JTG=68,JTV=75, == GS=77,IV=80,PAR=82,XSL=85,X2J=86,SW=86,XC=86,RES=87,PC=87,TC=0 [https://example.com/apic/foo/bar]";
 
+  let shareableURL = ""
   let logType = "dp";
   let url = "";
   const logTypeMap = {
@@ -80,7 +84,10 @@
     }
     // console.log({ actions });
   }
-
+  function generateShareableURL(log){
+    const url = `${$page.url.host}?log=${encodeURIComponent(log)}`;
+    return url
+  }
   update({ target: { value: log } });
 
   // TODO: Add "==" in action table
@@ -88,6 +95,7 @@
   let formattedData = [{}];
   $: if (log) {
     update(log.trim());
+    shareableURL = generateShareableURL(log.trim());
     let prevTime = 0;
     formattedData = [];
     actions.forEach((action, i) => {
@@ -107,14 +115,20 @@
     });
   }
 </script>
-
-<h1>ExtLatency Log Viewer</h1>
+<div class="top-header">
+  <h1>ExtLatency Log Viewer</h1>
+  <div class="create-link">
+    <span>Copy Shareable URL</span>
+    <CopyButton text={shareableURL} feedback="Copied URL!">Hello?</CopyButton>
+  </div>
+</div>
 
 <main>
   <TextArea
     labelText="ExtLatency Message"
     placeholder="ExtLatency: ......... [https://example.com]"
     bind:value={log}
+    disabled
   />
 
   {#if actions.length > 0}
@@ -146,12 +160,12 @@
           <span>Collapsible Tree View</span>
         </div>
       </Switch>
-      <Switch>
+      <!-- <Switch>
         <div style="display: flex; align-items: center;">
           <Fire style="margin-right: 0.5rem;" />
           <span>Flame Chart</span>
         </div>
-      </Switch>
+      </Switch> -->
     </ContentSwitcher>
     <div style="margin-top: 2em"></div>
     {#if selectedIndex === 0}
@@ -170,3 +184,15 @@
     />
   {/if}
 </main>
+
+<style>
+  .top-header{
+    display: flex;
+    justify-content: space-between;
+  }
+  .create-link{
+    display: flex;
+    align-items: center;
+    gap: 1em
+  }
+</style>
