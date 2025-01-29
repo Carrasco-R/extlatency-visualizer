@@ -11,6 +11,7 @@
     InlineNotification,
     ContentSwitcher,
     Switch,
+    Tile
   } from "carbon-components-svelte";
   import DecisionTree from "carbon-icons-svelte/lib/DecisionTree.svelte";
   import Table from "carbon-icons-svelte/lib/Table.svelte";
@@ -20,10 +21,17 @@
   import { text } from "@sveltejs/kit";
   import { page } from "$app/stores";
   let selectedIndex = 0;
-
   //   let log = "";
+  let isLogFromUrl = false
   let log =
-    "ExtLatency: TS=0,HR=0,BR=0,PS=0,RT=2,COR=2,CI=3,RL=59,SE=59,XS=60,SV=62,SV=63,JTG=68,JTV=75, == GS=77,IV=80,PAR=82,XSL=85,X2J=86,SW=86,XC=86,RES=87,PC=87,TC=0 [https://example.com/apic/foo/bar]";
+  "ExtLatency: TS=0,HR=0,BR=0,PS=0,RT=2,COR=2,CI=3,RL=59,SE=59,XS=60,SV=62,SV=63,JTG=68,JTV=75, == GS=77,IV=80,PAR=82,XSL=85,X2J=86,SW=86,XC=86,RES=87,PC=87,TC=0 [https://example.com/apic/foo/bar]";
+  
+  if($page.url.searchParams.has("log")){
+    const logParam = $page.url.searchParams.get("log")
+    console.log(logParam);
+    log = logParam
+    isLogFromUrl = true
+  }
 
   let shareableURL = ""
   let logType = "dp";
@@ -117,20 +125,33 @@
 </script>
 <div class="top-header">
   <h1>ExtLatency Log Viewer</h1>
-  <div class="create-link">
-    <span>Copy Shareable URL</span>
-    <CopyButton text={shareableURL} feedback="Copied URL!">Hello?</CopyButton>
-  </div>
+  {#if !isLogFromUrl}
+    <div class="create-link">
+      <span>Copy Shareable URL</span>
+      <CopyButton text={shareableURL} feedback="Copied URL!"></CopyButton>
+    </div>
+  {/if}  
 </div>
 
 <main>
-  <TextArea
-    labelText="ExtLatency Message"
-    placeholder="ExtLatency: ......... [https://example.com]"
-    bind:value={log}
-    disabled
-  />
+  {#if isLogFromUrl}
+    <InlineNotification
+    lowContrast
+    hideCloseButton
+    kind="success"
+    title="This Log was shared via URL!"
+    >
+    Please <a href="localhost:5173">open</a> a blank debugger to enter a new log
+    </InlineNotification>
 
+    <Tile>{log}</Tile>
+  {:else}
+    <TextArea
+      labelText="ExtLatency Message"
+      placeholder="ExtLatency: ......... [https://example.com]"
+      bind:value={log}
+    />
+  {/if}
   {#if actions.length > 0}
     <InlineNotification
       lowContrast
