@@ -2,8 +2,8 @@
   // utils
   import { dictionary } from "$lib/dictionary";
   // custom components
-  import CollapsibleView from "./CollapsibleView.svelte";
-  import TableView from "./TableView.svelte";
+  import CollapsibleView from "$lib/components/CollapsibleView.svelte";
+  import TableView from "../lib/components/TableView.svelte";
   import { Button, CopyButton } from "carbon-components-svelte";
   // carbon design components
   import {
@@ -11,29 +11,29 @@
     InlineNotification,
     ContentSwitcher,
     Switch,
-    Tile
+    Tile,
   } from "carbon-components-svelte";
   import DecisionTree from "carbon-icons-svelte/lib/DecisionTree.svelte";
   import Table from "carbon-icons-svelte/lib/Table.svelte";
   import Fire from "carbon-icons-svelte/lib/Fire.svelte";
-  import CollapsibleTreeView from "./CollapsibleView.svelte";
+  import CollapsibleTreeView from "$lib/components/CollapsibleView.svelte";
   import { Copy } from "carbon-icons-svelte";
   import { text } from "@sveltejs/kit";
   import { page } from "$app/stores";
   let selectedIndex = 0;
   //   let log = "";
-  let isLogFromUrl = false
+  let isLogFromUrl = false;
   let log =
-  "ExtLatency: TS=0,HR=0,BR=0,PS=0,RT=2,COR=2,CI=3,RL=59,SE=59,XS=60,SV=62,SV=63,JTG=68,JTV=75, == GS=77,IV=80,PAR=82,XSL=85,X2J=86,SW=86,XC=86,RES=87,PC=87,TC=0 [https://example.com/apic/foo/bar]";
-  
-  if($page.url.searchParams.has("log")){
-    const logParam = $page.url.searchParams.get("log")
+    "ExtLatency: TS=0,HR=0,BR=0,PS=0,RT=2,COR=2,CI=3,RL=59,SE=59,XS=60,SV=62,SV=63,JTG=68,JTV=75, == GS=77,IV=80,PAR=82,XSL=85,X2J=86,SW=86,XC=86,RES=87,PC=87,TC=0 [https://example.com/apic/foo/bar]";
+
+  if ($page.url.searchParams.has("log")) {
+    const logParam = $page.url.searchParams.get("log");
     console.log(logParam);
-    log = logParam
-    isLogFromUrl = true
+    log = logParam;
+    isLogFromUrl = true;
   }
 
-  let shareableURL = ""
+  let shareableURL = "";
   let logType = "dp";
   let url = "";
   const logTypeMap = {
@@ -92,9 +92,9 @@
     }
     // console.log({ actions });
   }
-  function generateShareableURL(log){
+  function generateShareableURL(log) {
     const url = `${$page.url.host}?log=${encodeURIComponent(log)}`;
-    return url
+    return url;
   }
   update({ target: { value: log } });
 
@@ -123,6 +123,7 @@
     });
   }
 </script>
+
 <div class="top-header">
   <h1>ExtLatency Log Viewer</h1>
   {#if !isLogFromUrl}
@@ -130,18 +131,18 @@
       <span>Copy Shareable URL</span>
       <CopyButton text={shareableURL} feedback="Copied URL!"></CopyButton>
     </div>
-  {/if}  
+  {/if}
 </div>
 
 <main>
   {#if isLogFromUrl}
     <InlineNotification
-    lowContrast
-    hideCloseButton
-    kind="success"
-    title="This Log was shared via URL!"
+      lowContrast
+      hideCloseButton
+      kind="success"
+      title="This Log was shared via URL!"
     >
-    Please <a href="localhost:5173">open</a> a blank debugger to enter a new log
+      Please <a href="localhost:5173">open</a> a blank debugger to enter a new log
     </InlineNotification>
 
     <Tile>{log}</Tile>
@@ -207,13 +208,13 @@
 </main>
 
 <style>
-  .top-header{
+  .top-header {
     display: flex;
     justify-content: space-between;
   }
-  .create-link{
+  .create-link {
     display: flex;
     align-items: center;
-    gap: 1em
+    gap: 1em;
   }
 </style>

@@ -8,7 +8,7 @@
 
 <Header
   company="Ricardo Carrasco"
-  platformName="IBM Datapower - Enhanced Messages Viewer"
+  platformName="IBM Datapower - ExtLatency Log Viewer"
 />
 
 <Content>
