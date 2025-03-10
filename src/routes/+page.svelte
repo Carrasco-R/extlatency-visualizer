@@ -23,7 +23,7 @@
   import { Copy, DecisionTree, Table, Fire } from "carbon-icons-svelte";
 
   let baseLogData = {};
-  let selectedIndex;
+  let selectedIndex = 0;
   let log = "";
   let isLogFromUrl = false;
 
