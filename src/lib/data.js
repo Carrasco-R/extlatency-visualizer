@@ -1,4 +1,6 @@
 import { dictionary } from "./dictionary";
+import { v4 as uuidv4 } from "uuid";
+
 
 const logTypeMap = {
   dp: "Multiprotocol gateway | Web service proxy | XML firewall",
@@ -67,7 +69,7 @@ export function parseLogData(log) {
     }
   }
   baseLogData.logTypeDescription = logTypeMap[baseLogData.logType];
-  console.log({ baseLogData });
+//   console.log({ baseLogData });
   return baseLogData;
 }
 
@@ -91,3 +93,114 @@ export function addMetadata(actions) {
   });
   return newActions;
 }
+
+
+export function addTNodes(nodes) {
+    //   console.log({ nodes });
+
+    const startTracker = [];
+    let tree = [];
+    for (let i = 0; i < nodes.length; i++) {
+      const { id, keyword, text, time, duration } = nodes[i];
+      if (keyword == "TS") {
+        startTracker.push(i);
+        //   console.log({ startTracker });
+      }
+      if (keyword == "TC") {
+        if (startTracker.length == 1) {
+          const firstStart = startTracker.pop();
+          if (firstStart === undefined) {
+            throw new Error("Error parsing Tnodes");
+          }
+          let slice = nodes.slice(firstStart + 1, i);
+          const sliceKeys = slice.map(({ keyword }) => keyword);
+          // console.log({ sliceKeys });
+          if (sliceKeys.includes("TS") || sliceKeys.includes("TC")) {
+            slice = addTNodes(slice);
+          } else {
+            slice = addPNodes(slice);
+          }
+          const transactionID = `Transaction${uuidv4()}`;
+          tree = [
+            ...tree,
+            {
+              id: transactionID,
+              text: `Transaction`,
+              children: slice,
+            },
+          ];
+        } else {
+          startTracker.pop();
+        }
+      }
+      if (keyword != "TC" && startTracker.length == 0) {
+        //   console.log("add tc leaf");
+
+        //   console.log(`${text} (${time}ms)`);
+
+        tree = [
+          ...tree,
+          {
+            id,
+            keyword,
+            text,
+          },
+        ];
+      }
+    }
+    return tree;
+  }
+
+
+export function addPNodes(nodes) {
+    //   console.log({ nodes });
+
+    const startTracker = [];
+    let tree = [];
+    for (let i = 0; i < nodes.length; i++) {
+      const { id, keyword, text, time, duration } = nodes[i];
+      if (keyword == "PS") {
+        startTracker.push(i);
+        //   console.log({ startTracker });
+      }
+      if (keyword == "PC") {
+        if (startTracker.length == 1) {
+          const firstStart = startTracker.pop();
+          if (firstStart === undefined) {
+            throw new Error("Error parsing pNodes");
+          }
+          let slice = nodes.slice(firstStart + 1, i);
+          const sliceKeys = slice.map(({ keyword }) => keyword);
+          // console.log({ sliceKeys });
+          if (sliceKeys.includes("PS") || sliceKeys.includes("PC")) {
+            slice = addPNodes(slice);
+          }
+
+          tree = [
+            ...tree,
+            {
+              id: `Processing Rule${uuidv4()}`,
+              text: `Processing Rule`,
+              children: slice,
+            },
+          ];
+        } else {
+          startTracker.pop();
+        }
+      }
+      if (keyword != "PC" && startTracker.length == 0) {
+        //   console.log("add duration?");
+        //   console.log(`${text} (${duration}ms)`);
+
+        tree = [
+          ...tree,
+          {
+            id,
+            text,
+            keyword,
+          },
+        ];
+      }
+    }
+    return tree;
+  }
