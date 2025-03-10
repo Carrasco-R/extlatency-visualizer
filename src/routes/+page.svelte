@@ -2,6 +2,8 @@
     // sv
     import { text } from "@sveltejs/kit";
     import { page } from "$app/stores";
+    import { onMount } from "svelte";
+
     // utils
     import { dictionary } from "../lib/dictionary";
     import { parseLogData, exampleLog } from "../lib/data";
@@ -22,20 +24,22 @@
     import { Copy, DecisionTree, Table, Fire } from "carbon-icons-svelte";
 
     let baseLogData = {};
-    let selectedIndex = 1;
-    let log = "";
+    let selectedIndex = 0;
+    let log = exampleLog;
     let isLogFromUrl = false;
 
-    if ($page.url.searchParams.has("log")) {
-        const logParam = $page.url.searchParams.get("log");
-        console.log("URL Param:" + logParam);
-        log = logParam;
-        isLogFromUrl = true;
-    } else log = exampleLog;
+    onMount(() => {
+        if ($page.url.searchParams.has("log")) {
+            const logParam = $page.url.searchParams.get("log");
+            console.log("URL Param:" + logParam);
+            log = logParam;
+            isLogFromUrl = true;
+        }
+    });
 
     let shareableURL = "";
     // TODO: Add "==" in action table
-    $: if (log) {
+    $: if (log.length) {
         baseLogData = parseLogData(log.trim());
         shareableURL = `${$page.url.host}?log=${encodeURIComponent(log.trim())}`;
     }
@@ -68,7 +72,7 @@
             bind:value={log}
         />
     {/if}
-    {#if baseLogData.actions.length > 0}
+    {#if baseLogData || baseLogData.actions.length > 0}
         <InlineNotification
             lowContrast
             hideCloseButton
