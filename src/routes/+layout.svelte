@@ -1,15 +1,9 @@
 <script>
   import { Header, Content, Grid, Row, Column } from "carbon-components-svelte";
+  import "carbon-components-svelte/css/g10.css";
 </script>
 
-<svelte:head>
-  <title>ExtLatency Viewer</title>
-</svelte:head>
-
-<Header
-  company="Ricardo Carrasco"
-  platformName="IBM Datapower - ExtLatency Log Viewer"
-/>
+<Header company="Ricardo Carrasco" platformName="ExtLatency Log Viewer" />
 
 <Content>
   <Grid>
@@ -20,7 +14,3 @@
     </Row>
   </Grid>
 </Content>
-
-<style>
-  @import "carbon-components-svelte/css/g10.css";
-</style>

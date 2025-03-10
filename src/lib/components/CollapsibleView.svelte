@@ -1,17 +1,17 @@
 <script>
-  export let formattedData;
+  export let data;
   import { TreeView } from "carbon-components-svelte";
   import { v4 as uuidv4 } from "uuid";
-
-  //   console.log({ formattedData });
+  import { addMetadata } from "../data";
 
   let activeId = "";
   let selectedIds = [];
   let children = [];
-  let initialExpandedID = null
+  let initialExpandedID = null;
 
-  $: if (formattedData) {
-    let nodes = formattedData.map(({ id, keyword, text, time, duration }) => {
+  $: if (data) {
+    let actions = addMetadata(data.actions);
+    let nodes = actions.map(({ id, keyword, text, time, duration }) => {
       return {
         id,
         keyword,
@@ -48,7 +48,7 @@
             } else {
               slice = addPNodes(slice);
             }
-            const transactionID = `Transaction${uuidv4()}`
+            const transactionID = `Transaction${uuidv4()}`;
             tree = [
               ...tree,
               {
@@ -57,7 +57,7 @@
                 children: slice,
               },
             ];
-            initialExpandedID = transactionID
+            initialExpandedID = transactionID;
           } else {
             startTracker.pop();
           }
@@ -134,7 +134,7 @@
 
     try {
       children = addTNodes(nodes);
-        console.log({ children });
+      console.log({ children });
     } catch (error) {
       console.log(error);
       children = [];

@@ -1,6 +1,7 @@
 <script>
-  export let formattedData;
+  export let data;
   import { DataTable } from "carbon-components-svelte";
+  import { addMetadata } from "../data";
 </script>
 
 <DataTable
@@ -11,5 +12,5 @@
     { key: "keyword", value: "Keyword" },
     { key: "text", value: "Description" },
   ]}
-  rows={formattedData}
+  rows={addMetadata(data.actions)}
 />

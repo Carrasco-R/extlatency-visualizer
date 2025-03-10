@@ -1,126 +1,44 @@
 <script>
+  // sv
+  import { text } from "@sveltejs/kit";
+  import { page } from "$app/stores";
   // utils
-  import { dictionary } from "$lib/dictionary";
+  import { dictionary } from "../lib/dictionary";
+  import { parseLogData, exampleLog } from "../lib/data";
   // custom components
-  import CollapsibleView from "$lib/components/CollapsibleView.svelte";
+  import CollapsibleView from "../lib/components/CollapsibleView.svelte";
   import TableView from "../lib/components/TableView.svelte";
-  import { Button, CopyButton } from "carbon-components-svelte";
-  // carbon design components
+  import FlameChartView from "../lib/components/FlameChartView.svelte";
+  // carbon components
   import {
+    Button,
+    CopyButton,
     TextArea,
     InlineNotification,
     ContentSwitcher,
     Switch,
     Tile,
   } from "carbon-components-svelte";
-  import DecisionTree from "carbon-icons-svelte/lib/DecisionTree.svelte";
-  import Table from "carbon-icons-svelte/lib/Table.svelte";
-  import Fire from "carbon-icons-svelte/lib/Fire.svelte";
-  import CollapsibleTreeView from "$lib/components/CollapsibleView.svelte";
-  import { Copy } from "carbon-icons-svelte";
-  import { text } from "@sveltejs/kit";
-  import { page } from "$app/stores";
-  let selectedIndex = 0;
-  //   let log = "";
+  // carbon icons
+  import { Copy, DecisionTree, Table, Fire } from "carbon-icons-svelte";
+
+  let baseLogData = {};
+  let selectedIndex;
+  let log = "";
   let isLogFromUrl = false;
-  let log =
-    "ExtLatency: TS=0,HR=0,BR=0,PS=0,RT=2,COR=2,CI=3,RL=59,SE=59,XS=60,SV=62,SV=63,JTG=68,JTV=75, == GS=77,IV=80,PAR=82,XSL=85,X2J=86,SW=86,XC=86,RES=87,PC=87,TC=0 [https://example.com/apic/foo/bar]";
 
   if ($page.url.searchParams.has("log")) {
     const logParam = $page.url.searchParams.get("log");
-    console.log(logParam);
+    console.log("URL Param:" + logParam);
     log = logParam;
     isLogFromUrl = true;
-  }
+  } else log = exampleLog;
 
   let shareableURL = "";
-  let logType = "dp";
-  let url = "";
-  const logTypeMap = {
-    dp: "Multiprotocol gateway | Web service proxy | XML firewall",
-    apigw: "API gateway",
-    "": "Unkown/Error",
-  };
-  let actions = [""];
-  function parseActions(str) {
-    return str
-      .trim()
-      .split(",")
-      .filter((i) => i != "")
-      .map((i) => {
-        let [key, value] = i.split("=");
-        if (
-          typeof key === undefined ||
-          key.trim() == "" ||
-          typeof value === "undefined" ||
-          value.trim() == "" ||
-          isNaN(value)
-        ) {
-          throw new Error(`Error parsing action ${key} : ${value}`);
-        }
-        value = parseInt(value);
-        return { [key]: value };
-      });
-  }
-  function update(log) {
-    actions = [];
-    logType = "";
-    const datapowerLogRegex = /(?:ExtLatency: )(.*)(?: == )(.*)(\[.*\])$/;
-    const apiGatewayLogRegex = /(?:ExtLatency: )(.*)(\[.*\])$/;
-    if (datapowerLogRegex.test(log)) {
-      try {
-        const regexMatch = log.match(datapowerLogRegex);
-        const requestProcessing = parseActions(regexMatch[1]);
-        const responseProcessing = parseActions(regexMatch[2]);
-        const logUrl = regexMatch[3];
-        actions = [...requestProcessing, ...responseProcessing];
-        logType = "dp";
-        url = logUrl;
-      } catch (error) {
-        console.log({ error });
-      }
-    } else if (apiGatewayLogRegex.test(log)) {
-      try {
-        const regexMatch = log.match(apiGatewayLogRegex) ?? [""];
-        const logUrl = regexMatch[2];
-        actions = parseActions(regexMatch[1]);
-        url = logUrl;
-        logType = "apigw";
-      } catch (error) {
-        // console.log({ error });
-      }
-    }
-    // console.log({ actions });
-  }
-  function generateShareableURL(log) {
-    const url = `${$page.url.host}?log=${encodeURIComponent(log)}`;
-    return url;
-  }
-  update({ target: { value: log } });
-
   // TODO: Add "==" in action table
-
-  let formattedData = [{}];
   $: if (log) {
-    update(log.trim());
-    shareableURL = generateShareableURL(log.trim());
-    let prevTime = 0;
-    formattedData = [];
-    actions.forEach((action, i) => {
-      let [keyword, time] = Object.entries(action)[0];
-      let duration = time - prevTime;
-      formattedData = [
-        ...formattedData,
-        {
-          id: i,
-          time,
-          keyword: keyword.trim(),
-          duration,
-          text: dictionary[keyword] ?? "Unknown keyword",
-        },
-      ];
-      prevTime = time;
-    });
+    baseLogData = parseLogData(log.trim());
+    shareableURL = `${$page.url.host}?log=${encodeURIComponent(log.trim())}`;
   }
 </script>
 
@@ -140,11 +58,9 @@
       lowContrast
       hideCloseButton
       kind="success"
-      title="This Log was shared via URL!"
-    >
-      Please <a href="localhost:5173">open</a> a blank debugger to enter a new log
+      title="This Log was shared via URL"
+      >Please clear the url to enter a new log
     </InlineNotification>
-
     <Tile>{log}</Tile>
   {:else}
     <TextArea
@@ -153,49 +69,49 @@
       bind:value={log}
     />
   {/if}
-  {#if actions.length > 0}
+  {#if baseLogData.actions.length > 0}
     <InlineNotification
       lowContrast
       hideCloseButton
       kind="info"
       title="Enhanced Latency Message type:"
-      subtitle={logTypeMap[logType]}
+      subtitle={baseLogData["logTypeDescription"]}
     />
     <InlineNotification
       lowContrast
       hideCloseButton
       kind="info"
       title="Resource URL:"
-      subtitle={url}
+      subtitle={baseLogData["logResourceUrl"]}
     />
 
-    <ContentSwitcher bind:selectedIndex>
+    <ContentSwitcher style="margin-bottom: 2em" bind:selectedIndex>
       <Switch>
-        <div style="display: flex; align-items: center;">
-          <Table style="margin-right: 0.5rem;" />
-          <span>Table (Default)</span>
+        <div class="switcher-tab">
+          <Table />
+          <span>Table with Keyword Descriptions (Default)</span>
         </div>
       </Switch>
       <Switch>
-        <div style="display: flex; align-items: center;">
-          <DecisionTree style="margin-right: 0.5rem;" />
+        <div class="switcher-tab">
+          <DecisionTree />
           <span>Collapsible Tree View</span>
         </div>
       </Switch>
-      <!-- <Switch>
-        <div style="display: flex; align-items: center;">
-          <Fire style="margin-right: 0.5rem;" />
+      <Switch>
+        <div class="switcher-tab">
+          <Fire />
           <span>Flame Chart</span>
         </div>
-      </Switch> -->
+      </Switch>
     </ContentSwitcher>
-    <div style="margin-top: 2em"></div>
+    <div style="margin-top: 2em" />
     {#if selectedIndex === 0}
-      <TableView {formattedData} />
+      <TableView data={baseLogData} />
     {:else if selectedIndex == 1}
-      <CollapsibleView {formattedData} />
+      <CollapsibleView data={baseLogData} />
     {:else if selectedIndex == 2}
-      <FlameChartView {formattedData} />
+      <FlameChartView data={baseLogData} />
     {/if}
   {:else if log !== ""}
     <InlineNotification
@@ -208,6 +124,11 @@
 </main>
 
 <style>
+  .switcher-tab {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+  }
   .top-header {
     display: flex;
     justify-content: space-between;

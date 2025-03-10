@@ -1,0 +1,10 @@
+{
+    "name": "TEST",
+    "value": "VALUE",
+    "children": [
+        {
+            "name": "test",
+            "value": "test2"
+        }
+    ]
+};
