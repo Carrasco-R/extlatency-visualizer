@@ -9,3 +9,4 @@ This web application is designed to provide a comprehensive analysis of ExtLaten
 - Easily paste in any ExtLatency Log
 - **Table view** with expanded keyword descriptions
 - **Tree view** with keywords collapsed where possible
+- **Shareable URL** to send to teammates
