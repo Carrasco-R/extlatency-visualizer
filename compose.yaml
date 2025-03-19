@@ -1,0 +1,18 @@
+services:
+  extlatency-web:
+    image: nginx:latest
+    expose:
+      - 80
+    volumes:
+      - ./build:/usr/share/nginx/html
+    labels:
+      - traefik.enable=true
+      - traefik.http.routers.extlatency.entrypoints=websecure
+      - traefik.http.routers.extlatency.tls.certresolver=letsencryptresolver
+      - traefik.http.routers.extlatency.rule=Host(`extlatency.${DOMAIN}`)
+    networks:
+      - default
+      - web
+networks:
+  web:
+    external: true
