@@ -4,7 +4,7 @@ services:
     expose:
       - 80
     volumes:
-      - ./build:/usr/share/nginx/html
+      - ./build:/usr/share/nginx/html # run build first
     labels:
       - traefik.enable=true
       - traefik.http.routers.extlatency.entrypoints=websecure
